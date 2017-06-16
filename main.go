@@ -11,14 +11,26 @@ import (
 )
 
 func main() {
-	os.Exit(run(os.Args))
+	args := os.Args
+	if len(args) < 2 {
+		fmt.Fprintf(os.Stdout, "What manual page do you want?")
+		os.Exit(1)
+	}
+
+	url, err := transeformURL(args[1])
+
+	if err != nil {
+		os.Exit(man(args[1:]))
+	}
+
+	os.Exit(webinfo(url))
 }
 
 // webinfo prints page's title and description
 func webinfo(url string) int {
 	doc, err := goquery.NewDocument(url)
 	if err != nil {
-		fmt.Printf("goquery Error:%s\n", err.Error())
+		fmt.Fprintf(os.Stderr, "goquery Error:%s\n", err.Error())
 		return 1
 	}
 	fmt.Fprint(os.Stdout, "Page Infomation: [ページメタ情報]\n")
@@ -42,31 +54,17 @@ func man(options []string) int {
 	cmd.Stderr = os.Stderr
 	err := cmd.Run()
 	if err != nil {
-		fmt.Printf("man Error:%s\n", err.Error())
+		fmt.Fprintf(os.Stderr, "man Error:%s\n", err.Error())
 		return 1
 	}
 	return 0
 }
 
-// transeformURL returns url string
+// transeformURL returns url string and error
 func transeformURL(str string) (string, error) {
 	u, err := url.Parse(str)
-	if u.Host != "" {
-		return str, err
+	if u.Host != "" && err == nil {
+		return str, nil
 	}
-	return "url parse error", errors.New("str is not url format")
-}
-
-func run(args []string) int {
-	if len(args) < 2 {
-		fmt.Printf("What manual page do you want?")
-		return 1
-	}
-
-	url, err := transeformURL(args[1])
-
-	if err != nil {
-		return man(args[1:])
-	}
-	return webinfo(url)
+	return "", errors.New("str is not url format")
 }

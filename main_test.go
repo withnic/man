@@ -5,11 +5,11 @@ import "testing"
 func TestTranseformURL(t *testing.T) {
 	url, err := transeformURL("http://localhost.com")
 	if err != nil {
-		t.Errorf("has error :%s", err.Error())
+		t.Fatalf("has error :%s", err.Error())
 	}
 
-	expected := "http://localhost.com"
-	if url != expected {
-		t.Errorf("got %s expected %s", url, expected)
+	want := "http://localhost.com"
+	if url != want {
+		t.Fatalf("got %s want %s", url, want)
 	}
 }
